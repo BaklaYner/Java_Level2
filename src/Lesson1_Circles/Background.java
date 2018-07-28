@@ -2,39 +2,22 @@ package Lesson1_Circles;
 
 import java.awt.*;
 
-public class Background extends Sprite {
+public class Background implements GameObject {
     private Color color;
     private float time;
-
-    Background() {
-        color = new Color(
-                (int) (Math.random() * 255),
-                (int) (Math.random() * 255),
-                (int) (Math.random() * 255)
-        );
-        time = 0;
-    }
+    private final float AMPLITUDE = 255f / 2f;
 
     @Override
-    void update(GameCanvas canvas, float deltaTime) {
+    public void update(GameCanvas canvas, float deltaTime) {
         time += deltaTime;
-        if (time > 0.5f) {
-            color = new Color(
-                    (int) (Math.random() * 255),
-                    (int) (Math.random() * 255),
-                    (int) (Math.random() * 255)
-            );
-            time = 0;
-        }
+        int red = Math.round(AMPLITUDE * (float)(1 + Math.sin(time)));
+        int green = Math.round(AMPLITUDE * (float)(1 + Math.sin(time * 2)));
+        int blue = Math.round(AMPLITUDE * (float)(1 + Math.sin(time * 3)));
+        color = new Color(red, green, blue);
     }
 
     @Override
-    void render(GameCanvas canvas, Graphics g) {
-        centerX = (float) canvas.getWidth() / 2f;
-        centerY = (float) canvas.getHeight() / 2f;
-        halfWidth = centerX;
-        halfHeight = centerY;
-        g.setColor(color);
-        g.fillRect((int) getLeft(), (int) getTop(), (int) getWidth(), (int) getHeight());
+    public void render(GameCanvas canvas, Graphics g) {
+        canvas.setBackground(color);
     }
 }

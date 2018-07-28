@@ -1,7 +1,5 @@
 package Lesson1_Circles;
 
-import java.awt.*;
-
 abstract class Sprite {
     protected float centerX;
     protected float centerY;
@@ -39,6 +37,4 @@ abstract class Sprite {
         return halfHeight * 2;
     }
 
-    abstract void update(GameCanvas canvas, float deltaTime);
-    abstract void render(GameCanvas canvas, Graphics g);
 }

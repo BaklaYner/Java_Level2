@@ -10,8 +10,8 @@ public class MainWindow extends JFrame {
     private static final int POS_Y = 150;
     private static final int WINDOW_WIDTH = 1024;
     private static final int WINDOW_HEIGHT = 768;
-    private Sprite[] sprites = new Sprite[10];
-    private int count = 0;
+    private GameObject[] gameObjects = new GameObject[4];
+    private int gameObjectsCount;
 
     MainWindow() {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -19,6 +19,15 @@ public class MainWindow extends JFrame {
         setTitle("Circles on the water");
 
         GameCanvas gameCanvas = new GameCanvas(this);
+        gameCanvas.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1)
+                    addGameObject(new Circle(e.getX(), e.getY()));
+                if (e.getButton() == MouseEvent.BUTTON3)
+                    delGameObject();
+            }
+        });
 
         add(gameCanvas, BorderLayout.CENTER);
         initGame();
@@ -26,28 +35,14 @@ public class MainWindow extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new MainWindow();
-            }
-        });
+        SwingUtilities.invokeLater(() -> new MainWindow());
     }
 
     private void initGame() {
-        sprites[count++] = new Background();
-        while (count < sprites.length) {
-            sprites[count++] = new Circle();
+        addGameObject(new Background());
+        while (gameObjectsCount < gameObjects.length) {
+            gameObjects[gameObjectsCount++] = new Circle();
         }
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON1)
-                    addCircle();
-                if (e.getButton() == MouseEvent.BUTTON3)
-                    delCircle();
-            }
-        });
     }
 
     public void onDrawFrame(GameCanvas canvas, Graphics g, float deltaTime) {
@@ -56,33 +51,30 @@ public class MainWindow extends JFrame {
     }
 
     private void update(GameCanvas canvas, float deltaTime) {
-        for (int i = 0; i < count; i++) {
-            sprites[i].update(canvas, deltaTime);
+        for (int i = 0; i < gameObjectsCount; i++) {
+            gameObjects[i].update(canvas, deltaTime);
         }
     }
 
     private void render(GameCanvas canvas, Graphics g) {
-        for (int i = 0; i < count; i++) {
-            sprites[i].render(canvas, g);
+        for (int i = 0; i < gameObjectsCount; i++) {
+            gameObjects[i].render(canvas, g);
         }
     }
 
-    private void growArray() {
-        Sprite[] newSprites = new Sprite[(sprites.length) * 2];
-        System.arraycopy(sprites, 0, newSprites, 0, sprites.length);
-        sprites = newSprites;
+    private void addGameObject(GameObject ob) {
+        if (gameObjectsCount >= gameObjects.length) {
+            GameObject[] newGameObjects = new GameObject[gameObjects.length * 2];
+            System.arraycopy(gameObjects, 0, newGameObjects, 0, gameObjects.length);
+            gameObjects = newGameObjects;
+        }
+        gameObjects[gameObjectsCount++] = ob;
     }
 
-    private void addCircle() {
-        if (count >= sprites.length) {
-            growArray();
+    private void delGameObject() {
+        if (gameObjectsCount > 1) {
+            gameObjects[--gameObjectsCount] = null;
         }
-        sprites[count++] = new Circle();
     }
 
-    private void delCircle() {
-        if (count > 1) {
-            sprites[--count] = null;
-        }
-    }
 }

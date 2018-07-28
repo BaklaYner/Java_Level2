@@ -2,25 +2,28 @@ package Lesson1_Circles;
 
 import java.awt.*;
 
-public class Circle extends Sprite {
-    private final Color color;
-    private float vx;
-    private float vy;
+public class Circle extends Sprite implements GameObject {
+    private final Color color = new Color(
+            (int) (Math.random() * 255),
+            (int) (Math.random() * 255),
+            (int) (Math.random() * 255)
+    );
+    private float vx = 150 + (float) (Math.random() * 200);
+    private float vy = 150 + (float) (Math.random() * 200);
 
     Circle() {
         halfHeight = 20 + (float) (Math.random() * 50);
         halfWidth = halfHeight;
-        vx = 150 + (float) (Math.random() * 200);
-        vy = 150 + (float) (Math.random() * 200);
-        color = new Color(
-                (int) (Math.random() * 255),
-                (int) (Math.random() * 255),
-                (int) (Math.random() * 255)
-        );
+    }
+
+    Circle(int x, int y) {
+        this();
+        centerX = x;
+        centerY = y;
     }
 
     @Override
-    void update(GameCanvas canvas, float deltaTime) {
+    public void update(GameCanvas canvas, float deltaTime) {
         centerX += vx * deltaTime;
         centerY += vy * deltaTime;
 
@@ -43,8 +46,9 @@ public class Circle extends Sprite {
     }
 
     @Override
-    void render(GameCanvas canvas, Graphics g) {
+    public void render(GameCanvas canvas, Graphics g) {
         g.setColor(color);
         g.fillOval((int) getLeft(), (int) getTop(), (int) getWidth(), (int) getHeight());
     }
+
 }
