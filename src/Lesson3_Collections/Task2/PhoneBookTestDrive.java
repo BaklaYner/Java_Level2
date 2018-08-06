@@ -1,6 +1,6 @@
 package Lesson3_Collections.Task2;
 
-import java.util.Set;
+import java.util.List;
 
 public class PhoneBookTestDrive {
     private static PhoneBook phoneBook = new PhoneBook();
@@ -34,12 +34,10 @@ public class PhoneBookTestDrive {
     }
 
     static void printPhoneNumbers(String secondName) {
-        Set<Entry> set = phoneBook.get(secondName);
+        List<Long> phones = phoneBook.getPhones(secondName);
         System.out.println("Запрос номеров по фамилии " + secondName + ":");
-        if (set != null) {
-            for (Entry entry : set) {
-                System.out.println(entry.getPhoneNumber());
-            }
+        if (phones != null) {
+            System.out.println(phones);
         } else {
             System.out.println("Номеров по фамилии " + secondName + " не найдено.");
         }

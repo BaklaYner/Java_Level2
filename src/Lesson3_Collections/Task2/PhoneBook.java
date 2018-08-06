@@ -23,8 +23,16 @@ public class PhoneBook {
         add(entry);
     }
 
-    public Set<Entry> get(String secondName) {
-        return phoneBook.get(secondName);
+    public ArrayList<Long> getPhones(String secondName) {
+        if (!phoneBook.containsKey(secondName)) {
+            return null;
+        }
+        Set<Entry> entries = phoneBook.get(secondName);
+        ArrayList<Long> phones = new ArrayList<>();
+        for (Entry entry : entries) {
+            phones.add(entry.getPhoneNumber());
+        }
+        return phones;
     }
 
 }
