@@ -4,26 +4,31 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler {
     private static final int WIDTH = 400;
     private static final int HEIGHT = 300;
-
+    private final DateFormat df = DateFormat.getTimeInstance(DateFormat.DEFAULT,
+            new Locale("ru", "RU"));
     private final JTextArea log = new JTextArea();
     private final JPanel panelTop = new JPanel(new GridLayout(2, 3));
     private final JTextField tfIPAddress = new JTextField("127.0.0.1");
     private final JTextField tfPort = new JTextField("8189");
-    private final JCheckBox cbAlwaysOnTop = new JCheckBox("Alwayson top");
-    private final JTextField tfLogin = new JTextField("ivan");
-    private final JPasswordField tfPassword = new JPasswordField("123");
+    private final JCheckBox cbAlwaysOnTop = new JCheckBox("Always on top");
+    private final JTextField tfLogin = new JTextField("Антон Богданов");
+    private final JPasswordField tfPassword = new JPasswordField("12321");
     private final JButton btnLogin = new JButton("Login");
-
     private final JPanel panelBottom = new JPanel(new BorderLayout());
-    private final JButton btnDisconnect = new JButton("<html><b>Disconnect</b></html>");
+    private final JButton btnDisconnect = new JButton("Disconnect");
     private final JTextField tfMessage = new JTextField();
     private final JButton btnSend = new JButton("Send");
-
     private final JList<String> userList = new JList<>();
+    private boolean IOErrorShown;
 
     private ClientGUI() {
         Thread.setDefaultUncaughtExceptionHandler(this);
@@ -33,13 +38,19 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         setTitle("Chat Client");
 
         log.setEditable(false);
+        log.setLineWrap(true);
+        log.setWrapStyleWord(true);
         JScrollPane scrollLog = new JScrollPane(log);
         JScrollPane scrollUsers = new JScrollPane(userList);
-        String[] users = {"user1_with_an_exceptionally_long_nickname", "user2", "user3", "user4", "user5", "user6", "user7", "user8", "user9", "user10"};
+        String[] users = {"user1_with_an_exceptionally_long_nickname", "user2", "user3", "user4", "user5",
+                "user6", "user7", "user8", "user9", "user10"};
         userList.setListData(users);
         scrollUsers.setPreferredSize(new Dimension(100, 0));
+
         cbAlwaysOnTop.addActionListener(this);
         btnLogin.addActionListener(this);
+        btnSend.addActionListener(this);
+        tfMessage.addActionListener(this);
 
         panelTop.add(tfIPAddress);
         panelTop.add(tfPort);
@@ -47,6 +58,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         panelTop.add(tfLogin);
         panelTop.add(tfPassword);
         panelTop.add(btnLogin);
+
         panelBottom.add(btnDisconnect, BorderLayout.WEST);
         panelBottom.add(tfMessage, BorderLayout.CENTER);
         panelBottom.add(btnSend, BorderLayout.EAST);
@@ -59,12 +71,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new ClientGUI();
-            }
-        });
+        SwingUtilities.invokeLater(() -> new ClientGUI());
     }
 
     @Override
@@ -73,7 +80,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         String msg;
         StackTraceElement[] ste = e.getStackTrace();
         if (ste.length == 0)
-            msg = "Empty Stacktrace";
+            msg = "Empty StackTrace";
         else {
             msg = e.getClass().getCanonicalName() + ": " + e.getMessage() +
                     "\n\t at " + ste[0];
@@ -86,13 +93,43 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
         if (src == cbAlwaysOnTop) {
-//            setAlwaysOnTop(!isAlwaysOnTop());
             setAlwaysOnTop(cbAlwaysOnTop.isSelected());
+        } else if (src == btnSend || src == tfMessage) {
+            tfMessage.requestFocus();
+            if ("".equals(tfMessage.getText())) return;
+            sendMessage();
         } else {
             throw new RuntimeException("Unknown source: " + src);
         }
     }
 
-    // Сообщение должно отсылаться либо по нажатию кнопки на форме, либо по нажатию кнопки Enter.
-    // Создать лог в файле (записи в лог должны делаться при отправке сообщения)
+    private void sendMessage() {
+        String user = tfLogin.getText();
+        String time = df.format(new Date());
+        String msg = tfMessage.getText();
+        tfMessage.setText("");
+        String message = String.format("%s (%s): %s\n", user, time, msg);
+        putLog(message);
+        writeLogFile(message);
+    }
+
+    private void putLog(String msg) {
+        SwingUtilities.invokeLater(() -> {
+            log.append(msg);
+        });
+    }
+
+    private void writeLogFile(String msg) {
+        try (FileWriter fileWriter = new FileWriter("log.txt", true)) {
+            fileWriter.write(new Date() + " - " + msg);
+            fileWriter.flush();
+        } catch (IOException e) {
+            if (!IOErrorShown) {
+                IOErrorShown = true;
+                JOptionPane.showMessageDialog(null, "Log file write error",
+                        "Exception", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
 }

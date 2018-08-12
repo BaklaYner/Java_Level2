@@ -31,12 +31,7 @@ public class ServerGUI extends JFrame implements ActionListener, Thread.Uncaught
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new ServerGUI();
-            }
-        });
+        SwingUtilities.invokeLater(() -> new ServerGUI());
     }
 
     @Override
@@ -44,7 +39,6 @@ public class ServerGUI extends JFrame implements ActionListener, Thread.Uncaught
         Object src = e.getSource();
         if (src == btnStart) {
             chatServer.start(8189);
-//            throw new RuntimeException("Hello from EDT");
         } else if (src == btnStop) {
             chatServer.stop();
         }
