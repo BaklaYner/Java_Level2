@@ -54,6 +54,11 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
         cbAlwaysOnTop.addActionListener(this);
         btnLogin.addActionListener(this);
+        tfIPAddress.addActionListener(this);
+        tfLogin.addActionListener(this);
+        tfPassword.addActionListener(this);
+        tfPort.addActionListener(this);
+        btnDisconnect.addActionListener(this);
         btnSend.addActionListener(this);
         tfMessage.addActionListener(this);
 
@@ -70,7 +75,6 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
         add(panelTop, BorderLayout.NORTH);
         add(scrollLog, BorderLayout.CENTER);
-        add(panelBottom, BorderLayout.SOUTH);
         add(scrollUsers, BorderLayout.EAST);
         setVisible(true);
     }
@@ -101,6 +105,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             setAlwaysOnTop(cbAlwaysOnTop.isSelected());
         } else if (src == btnLogin || src == tfIPAddress || src == tfLogin || src == tfPassword || src == tfPort) {
             connect();
+        } else if (src == btnDisconnect) {
+            socketThread.close();
         } else if (src == btnSend || src == tfMessage) {
             tfMessage.requestFocus();
             if ("".equals(tfMessage.getText())) return;
@@ -110,7 +116,23 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         }
     }
 
+    private void hideTopShowBottom() {
+        add(panelBottom, BorderLayout.SOUTH);
+        remove(panelTop);
+        setVisible(true);
+    }
+
+    private void hideBottomShowTop() {
+        add(panelTop, BorderLayout.NORTH);
+        remove(panelBottom);
+        setVisible(true);
+    }
+
     private void connect() {
+        if (socketThread != null && socketThread.isAlive()) {
+            putLog("You already connected!");
+            return;
+        }
         Socket socket = null;
         try {
             socket = new Socket(tfIPAddress.getText(), Integer.parseInt(tfPort.getText()));
@@ -118,6 +140,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             log.append("Exception: " + e.getMessage());
         }
         socketThread = new SocketThread(this, socket, "Client thread");
+        hideTopShowBottom();
+        tfMessage.requestFocus();
     }
 
     private void sendMessage() {
@@ -126,7 +150,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         String msg = tfMessage.getText();
         tfMessage.setText("");
         String message = String.format("%s (%s): %s\n", user, time, msg);
-        putLog(message);
+//        putLog(message);
 //        writeLogFile(message);
         socketThread.sendMessage(message);
     }
@@ -162,6 +186,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     @Override
     public void onStopSocketThread(SocketThread thread) {
+        hideBottomShowTop();
         putLog("Socket thread stop\n");
     }
 
@@ -177,7 +202,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     @Override
     public void onSocketThreadException(SocketThread thread, Exception e) {
-        putLog("Socket thread exception\n");
+        hideBottomShowTop();
+        putLog("Socket thread exception: " + e.getMessage() + "\n");
     }
 
 }

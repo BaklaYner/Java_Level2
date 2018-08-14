@@ -10,12 +10,14 @@ import java.net.Socket;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Vector;
 
 public class ChatServer implements ServerSocketThreadListener, SocketThreadListener {
     private final int timeout = 3000;
+    private ServerSocketThread server;
+    private Vector<SocketThread> userList = new Vector<>();
     private final DateFormat dateFormat = DateFormat.getTimeInstance(DateFormat.DEFAULT,
             new Locale("ru", "RU"));
-    private ServerSocketThread server;
 
     public void start(int port) {
         if (server != null && server.isAlive()) {
@@ -90,16 +92,20 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
 
     @Override
     public synchronized void onReceiveMessage(SocketThread thread, Socket socket, String message) {
-        thread.sendMessage("echo: " + message);
+        for (SocketThread socketThread : userList) {
+            socketThread.sendMessage(message);
+        }
     }
 
     @Override
     public synchronized void onSocketThreadIsReady(SocketThread thread, Socket socket) {
+        userList.add(thread);
         putLog("Socket thread is ready");
     }
 
     @Override
     public synchronized void onSocketThreadException(SocketThread thread, Exception e) {
+        userList.remove(thread);
         putLog("Socket thread exception");
     }
 
